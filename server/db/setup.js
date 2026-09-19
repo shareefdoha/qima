@@ -20,22 +20,24 @@ dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main() {
-  const sql = await fs.readFile(path.join(__dirname, 'schema.sql'), 'utf8');
+  const rawSql = await fs.readFile(path.join(__dirname, 'schema.sql'), 'utf8');
+  const dbName = process.env.DB_NAME || 'qima_db';
+  const sql = rawSql
+    .replace(/CREATE DATABASE IF NOT EXISTS `qima_db`[\s\S]*?;/i, '')
+    .replace(/USE `qima_db`;/i, '');
 
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST || '127.0.0.1',
     port: Number(process.env.DB_PORT || 3306),
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
+    database: dbName,
     multipleStatements: true, // only used here, never in the running API
   });
 
   console.log('→ Running schema.sql …');
   await conn.query(sql);
   console.log('✓ Schema and seed data applied.');
-
-  const dbName = process.env.DB_NAME || 'qima_db';
-  await conn.changeUser({ database: dbName });
 
   const email = (process.env.SEED_ADMIN_EMAIL || 'admin@qima.qa').toLowerCase();
   const password = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe@123';
@@ -45,12 +47,12 @@ async function main() {
   await conn.execute(
     `INSERT INTO admin_users (name, email, password_hash, role)
      VALUES (?, ?, ?, 'admin')
-     ON DUPLICATE KEY UPDATE name = VALUES(name), password_hash = VALUES(password_hash)`,
+     ON DUPLICATE KEY UPDATE name = VALUES(name)`,
     [name, email, hash]
   );
 
   console.log(`✓ Admin account ready →  ${email}  /  ${password}`);
-  console.log('  Change SEED_ADMIN_PASSWORD in .env and re-run to rotate it.');
+  console.log('  Existing admin passwords are preserved on later restarts.');
 
   await conn.end();
 }

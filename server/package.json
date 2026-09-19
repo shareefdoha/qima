@@ -6,7 +6,9 @@
   "description": "Qatar Indian Management Association (QIMA) — REST API",
   "main": "index.js",
   "scripts": {
+    "build": "npm ci --prefix ../client && npm run build --prefix ../client",
     "dev": "node --watch index.js",
+    "prestart": "node db/setup.js",
     "start": "node index.js",
     "db:setup": "node db/setup.js"
   },

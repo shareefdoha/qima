@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 dotenv.config(); // must run before any module reads process.env
 
@@ -17,6 +19,8 @@ import contactRoutes from './routes/contact.js';
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDist = path.resolve(__dirname, '../client/dist');
 
 app.set('trust proxy', 1); // correct client IPs behind nginx, for the rate limiters
 
@@ -58,9 +62,21 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/contact', contactRoutes);
 
-app.use((req, res) => {
+// Keep unknown API requests as JSON errors instead of returning the React app.
+app.use('/api', (req, res) => {
   res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
 });
+
+// In production Express serves the Vite build as a single full-stack app.
+// The wildcard fallback lets React Router handle direct URLs such as /admin.
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(clientDist));
+  app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+} else {
+  app.use((req, res) => {
+    res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
+  });
+}
 
 // ------------------------------------------------------- error handling ----
 // eslint-disable-next-line no-unused-vars
