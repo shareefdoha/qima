@@ -11,7 +11,7 @@ export default function Logo({ className = 'h-10 w-10', dark = false }) {
         x="32"
         y="40"
         textAnchor="middle"
-        fontFamily="Fraunces, Georgia, serif"
+        fontFamily="Urbanist, sans-serif"
         fontSize="22"
         fontWeight="700"
         fill={letter}
