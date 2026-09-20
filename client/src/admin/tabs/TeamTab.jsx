@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Plus, Pencil, Trash2, Users, Linkedin, Mail } from 'lucide-react';
-import { adminApi } from '../../api/client.js';
+import { adminApi, assetUrl } from '../../api/client.js';
 import { useResource } from '../useResource.js';
 import {
   TabPanel, Field, TextInput, TextArea, Select, Banner, Modal, ConfirmDialog, SavingButton,
@@ -185,12 +185,16 @@ export default function TeamTab() {
               <TextArea rows={4} value={editing.bio || ''} onChange={(e) => setEditing({ ...editing, bio: e.target.value })} />
             </Field>
 
-            <Field label="Photo URL" hint="Portrait orientation (4:5) crops best.">
-              <TextInput
-                value={editing.image_url || ''}
-                onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
-                placeholder="https://…/photo.jpg"
+            <Field label="Profile photo" hint="Upload a portrait image (maximum 8 MB). Leave blank to keep the current photo when editing.">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })}
+                className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200"
               />
+              {(editing.image || editing.image_url) && (
+                <img src={editing.image ? URL.createObjectURL(editing.image) : assetUrl(editing.image_url)} alt="Preview" className="mt-3 h-24 w-24 rounded-xl object-cover" />
+              )}
             </Field>
 
             <div className="grid gap-5 sm:grid-cols-2">

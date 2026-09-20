@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Image as ImageIcon, Video, Eye, EyeOff } from 'lucide-react';
-import { adminApi } from '../../api/client.js';
+import { adminApi, assetUrl } from '../../api/client.js';
 import { useResource } from '../useResource.js';
 import {
   TabPanel, Field, TextInput, TextArea, Select, Toggle, Banner, Modal, ConfirmDialog, SavingButton,
 } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
+import { getYouTubeVideoId, toYouTubeEmbedUrl } from '../../utils/youtubeUtils.js';
 
 const BLANK = {
   title: '',
@@ -65,7 +66,7 @@ export default function BannersTab() {
                     <Video className="h-8 w-8 text-white/50" />
                   </div>
                 ) : b.media_url ? (
-                  <img src={b.media_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <img src={assetUrl(b.media_url)} alt="" className="h-full w-full object-cover" loading="lazy" />
                 ) : (
                   <div className="h-full w-full bg-navy-200" />
                 )}
@@ -142,22 +143,17 @@ export default function BannersTab() {
                 </Select>
               </Field>
               <div className="sm:col-span-2">
-                <Field
-                  label="Media URL"
-                  required
-                  hint={
-                    editing.media_type === 'video'
-                      ? 'Direct .mp4 URL — it plays muted, looped and autoplaying behind the headline.'
-                      : 'Direct image URL, ideally 1920×1080 or wider.'
-                  }
-                >
-                  <TextInput
-                    required
-                    value={editing.media_url || ''}
-                    onChange={(e) => setEditing({ ...editing, media_url: e.target.value })}
-                    placeholder={editing.media_type === 'video' ? 'https://…/hero.mp4' : 'https://…/hero.jpg'}
-                  />
-                </Field>
+                {editing.media_type === 'image' ? (
+                  <Field label="Image upload" hint="Upload a hero image (maximum 8 MB). Leave blank to keep the existing image.">
+                    <input type="file" accept="image/*" onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
+                    {(editing.image || editing.media_url) && <img src={editing.image ? URL.createObjectURL(editing.image) : assetUrl(editing.media_url)} alt="Preview" className="mt-3 h-28 w-full rounded-xl object-cover" />}
+                  </Field>
+                ) : (
+                  <Field label="YouTube or MP4 video URL" required hint="Paste any YouTube watch/shorts/embed URL, or a direct MP4 URL.">
+                    <TextInput required value={editing.media_url || ''} onChange={(e) => setEditing({ ...editing, media_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" />
+                    {getYouTubeVideoId(editing.media_url) && <div className="mt-3 aspect-video overflow-hidden rounded-xl bg-black"><iframe title="YouTube preview" src={toYouTubeEmbedUrl(editing.media_url, { mute: '1' })} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" /></div>}
+                  </Field>
+                )}
               </div>
             </div>
 

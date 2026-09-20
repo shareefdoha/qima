@@ -4,4 +4,5 @@ dist/
 .env.local
 .env.production
 *.log
+/server/uploads/
 .DS_Store

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { imageUpload, uploadedPath } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -26,6 +27,7 @@ router.get(
 router.post(
   '/',
   requireAuth,
+  imageUpload.single('image'),
   asyncHandler(async (req, res) => {
     const {
       title = null,
@@ -45,7 +47,7 @@ router.post(
     const [result] = await pool.execute(
       `INSERT INTO banners (title, subtitle, media_type, media_url, cta_text, cta_link, is_active, display_order)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [title, subtitle, media_type, media_url, cta_text, cta_link, is_active ? 1 : 0, Number(display_order) || 0]
+      [title, subtitle, media_type, uploadedPath(req.file) || media_url, cta_text, cta_link, is_active ? 1 : 0, Number(display_order) || 0]
     );
 
     const [rows] = await pool.execute(`SELECT ${COLUMNS} FROM banners WHERE id = ?`, [result.insertId]);
@@ -57,6 +59,7 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
+  imageUpload.single('image'),
   asyncHandler(async (req, res) => {
     const {
       title = null,
@@ -79,7 +82,7 @@ router.put(
               cta_text = ?, cta_link = ?, is_active = ?, display_order = ?
         WHERE id = ?`,
       [
-        title, subtitle, media_type, media_url, cta_text, cta_link,
+        title, subtitle, media_type, uploadedPath(req.file) || media_url, cta_text, cta_link,
         is_active ? 1 : 0, Number(display_order) || 0, req.params.id,
       ]
     );

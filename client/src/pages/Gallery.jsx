@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Images, Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PageHeader, LoadingBlock, ErrorBlock, EmptyBlock } from '../components/ui.jsx';
 import { api } from '../api/client.js';
+import { assetUrl } from '../api/client.js';
 import { useFetch } from '../hooks/useApi.js';
+import { toYouTubeEmbedUrl, youTubeThumbnail } from '../utils/youtubeUtils.js';
 
 const FILTERS = [
   { key: 'all', label: 'All' },
@@ -87,13 +89,14 @@ export default function Gallery() {
                       >
                         {item.type === 'photo' ? (
                           <img
-                            src={item.url}
+                            src={assetUrl(item.url)}
                             alt={item.title}
                             loading="lazy"
                             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-800 to-navy-950">
+                          <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-800 to-navy-950">
+                            {youTubeThumbnail(item.video_embed_url) && <img src={youTubeThumbnail(item.video_embed_url)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />}
                             <span className="rounded-full bg-accent-600 p-5 text-white transition-transform duration-300 group-hover:scale-110">
                               <Play className="h-7 w-7 fill-current" />
                             </span>
@@ -167,7 +170,7 @@ export default function Gallery() {
           >
             {active.type === 'photo' ? (
               <img
-                src={active.url}
+                src={assetUrl(active.url)}
                 alt={active.title}
                 className="mx-auto max-h-[78vh] w-auto rounded-xl object-contain"
               />
@@ -175,7 +178,7 @@ export default function Gallery() {
               <div className="aspect-video w-full overflow-hidden rounded-xl bg-black">
                 <iframe
                   title={active.title}
-                  src={active.video_embed_url}
+                  src={toYouTubeEmbedUrl(active.video_embed_url) || active.video_embed_url}
                   className="h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

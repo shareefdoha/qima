@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { api } from '../api/client.js';
+import { assetUrl } from '../api/client.js';
 import { useFetch } from '../hooks/useApi.js';
+import { getYouTubeVideoId, toYouTubeEmbedUrl } from '../utils/youtubeUtils.js';
 
 const SLIDE_MS = 7000;
 
@@ -52,10 +54,19 @@ export default function HeroBanner() {
           }`}
           aria-hidden={i !== index}
         >
-          {slide.media_type === 'video' ? (
+          {slide.media_type === 'video' && getYouTubeVideoId(slide.media_url) ? (
+            <iframe
+              title=""
+              aria-hidden="true"
+              tabIndex="-1"
+              src={toYouTubeEmbedUrl(slide.media_url, { autoplay: '1', mute: '1', loop: '1', playlist: getYouTubeVideoId(slide.media_url), controls: '0', playsinline: '1' })}
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[160%] w-[160%] max-w-none -translate-x-1/2 -translate-y-1/2 border-0"
+              allow="autoplay; encrypted-media; picture-in-picture"
+            />
+          ) : slide.media_type === 'video' ? (
             <video
               className="h-full w-full object-cover"
-              src={slide.media_url}
+              src={assetUrl(slide.media_url)}
               autoPlay
               muted
               loop
@@ -64,7 +75,7 @@ export default function HeroBanner() {
             />
           ) : (
             <img
-              src={slide.media_url}
+              src={assetUrl(slide.media_url)}
               alt=""
               className="h-full w-full object-cover"
               loading={i === 0 ? 'eager' : 'lazy'}

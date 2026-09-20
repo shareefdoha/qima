@@ -5,6 +5,7 @@
  * Prod: VITE_API_URL=https://api.qima.qa
  */
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+export const assetUrl = (value = '') => (String(value).startsWith('/') ? `${BASE}${value}` : value);
 
 export const TOKEN_KEY = 'qima_admin_token';
 
@@ -22,7 +23,8 @@ export class ApiError extends Error {
 
 async function request(path, { method = 'GET', body, auth = false, signal } = {}) {
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (auth) {
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
@@ -34,7 +36,7 @@ async function request(path, { method = 'GET', body, auth = false, signal } = {}
       method,
       headers,
       signal,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
   } catch (err) {
     if (err.name === 'AbortError') throw err;
@@ -80,6 +82,15 @@ export const api = {
   },
 };
 
+function imageFormData(data, fileField) {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(data)) {
+    if (key !== fileField && value !== undefined && value !== null) form.append(key, String(value));
+  }
+  if (data[fileField] instanceof File) form.append('image', data[fileField]);
+  return form;
+}
+
 /* ------------------------------------------------------------ admin API --- */
 export const adminApi = {
   login: (email, password) => request('/auth/login', { method: 'POST', body: { email, password } }),
@@ -95,15 +106,15 @@ export const adminApi = {
   },
   banners: {
     list: () => request('/banners?all=true'),
-    create: (data) => request('/banners', { method: 'POST', auth: true, body: data }),
-    update: (id, data) => request(`/banners/${id}`, { method: 'PUT', auth: true, body: data }),
+    create: (data) => request('/banners', { method: 'POST', auth: true, body: imageFormData(data, 'image') }),
+    update: (id, data) => request(`/banners/${id}`, { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
     toggle: (id) => request(`/banners/${id}/toggle`, { method: 'PATCH', auth: true }),
     remove: (id) => request(`/banners/${id}`, { method: 'DELETE', auth: true }),
   },
   team: {
     list: () => request('/team'),
-    create: (data) => request('/team', { method: 'POST', auth: true, body: data }),
-    update: (id, data) => request(`/team/${id}`, { method: 'PUT', auth: true, body: data }),
+    create: (data) => request('/team', { method: 'POST', auth: true, body: imageFormData(data, 'image') }),
+    update: (id, data) => request(`/team/${id}`, { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
     remove: (id) => request(`/team/${id}`, { method: 'DELETE', auth: true }),
   },
   events: {
@@ -114,8 +125,8 @@ export const adminApi = {
   },
   gallery: {
     list: () => request('/gallery'),
-    create: (data) => request('/gallery', { method: 'POST', auth: true, body: data }),
-    update: (id, data) => request(`/gallery/${id}`, { method: 'PUT', auth: true, body: data }),
+    create: (data) => request('/gallery', { method: 'POST', auth: true, body: imageFormData(data, 'image') }),
+    update: (id, data) => request(`/gallery/${id}`, { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
     remove: (id) => request(`/gallery/${id}`, { method: 'DELETE', auth: true }),
   },
   settings: {

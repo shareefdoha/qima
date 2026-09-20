@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { imageUpload, uploadedPath } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -65,13 +66,13 @@ router.get(
   })
 );
 
-function readBody(body = {}) {
+function readBody(body = {}, file) {
   return [
     String(body.name || '').trim(),
     String(body.designation || '').trim(),
     String(body.role_category || 'Executive Committee').trim(),
     body.bio ?? null,
-    body.image_url ?? null,
+    uploadedPath(file) || body.image_url || null,
     body.linkedin_url ?? null,
     body.email ?? null,
     Number(body.display_order) || 0,
@@ -82,8 +83,9 @@ function readBody(body = {}) {
 router.post(
   '/',
   requireAuth,
+  imageUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const values = readBody(req.body);
+    const values = readBody(req.body, req.file);
     if (!values[0] || !values[1]) {
       return res.status(400).json({ error: 'Name and designation are required.' });
     }
@@ -104,8 +106,9 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
+  imageUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const values = readBody(req.body);
+    const values = readBody(req.body, req.file);
     if (!values[0] || !values[1]) {
       return res.status(400).json({ error: 'Name and designation are required.' });
     }

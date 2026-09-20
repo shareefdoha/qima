@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2, Images, Play } from 'lucide-react';
-import { adminApi } from '../../api/client.js';
+import { adminApi, assetUrl } from '../../api/client.js';
 import { useResource } from '../useResource.js';
 import { TabPanel, Field, TextInput, Select, Banner, Modal, ConfirmDialog, SavingButton } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
+import { toYouTubeEmbedUrl, youTubeThumbnail } from '../../utils/youtubeUtils.js';
 
 const BLANK = { title: '', type: 'photo', url: '', video_embed_url: '' };
 
@@ -21,7 +22,7 @@ export default function GalleryTab() {
   return (
     <TabPanel
       title="Gallery"
-      description="Photos and videos shown on /gallery. Videos use an embed URL — for YouTube that's the /embed/VIDEO_ID form."
+      description="Upload local photos or add any normal YouTube link for videos."
       actions={
         <button type="button" onClick={() => setEditing({ ...BLANK })} className="btn-primary !px-4 !py-2.5">
           <Plus className="h-4 w-4" />
@@ -41,9 +42,10 @@ export default function GalleryTab() {
             <div key={item.id} className="overflow-hidden rounded-2xl border border-navy-100 bg-white shadow-card">
               <div className="relative aspect-4/3 bg-navy-100">
                 {item.type === 'photo' ? (
-                  <img src={item.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  <img src={assetUrl(item.url)} alt="" className="h-full w-full object-cover" loading="lazy" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-800 to-navy-950">
+                  <div className="relative flex h-full w-full items-center justify-center bg-gradient-to-br from-navy-800 to-navy-950">
+                    {youTubeThumbnail(item.video_embed_url) && <img src={youTubeThumbnail(item.video_embed_url)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-65" />}
                     <Play className="h-8 w-8 text-white/60" />
                   </div>
                 )}
@@ -90,26 +92,23 @@ export default function GalleryTab() {
             </Field>
 
             {editing.type === 'photo' ? (
-              <Field label="Image URL" required>
-                <TextInput
-                  required
-                  value={editing.url || ''}
-                  onChange={(e) => setEditing({ ...editing, url: e.target.value })}
-                  placeholder="https://…/photo.jpg"
-                />
+              <Field label="Photo upload" hint="Choose an image from your computer (maximum 8 MB). Leave blank to retain the existing image.">
+                <input type="file" accept="image/*" onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
+                {(editing.image || editing.url) && <img src={editing.image ? URL.createObjectURL(editing.image) : assetUrl(editing.url)} alt="Preview" className="mt-3 h-28 w-full rounded-xl object-cover" />}
               </Field>
             ) : (
               <Field
-                label="Video embed URL"
+                label="YouTube video URL"
                 required
-                hint="YouTube: https://www.youtube.com/embed/VIDEO_ID — not the watch?v= link."
+                hint="Paste a YouTube watch, shorts, share, or embed URL."
               >
                 <TextInput
                   required
                   value={editing.video_embed_url || ''}
                   onChange={(e) => setEditing({ ...editing, video_embed_url: e.target.value })}
-                  placeholder="https://www.youtube.com/embed/…"
+                  placeholder="https://www.youtube.com/watch?v=…"
                 />
+                {toYouTubeEmbedUrl(editing.video_embed_url) && <div className="mt-3 aspect-video overflow-hidden rounded-xl bg-black"><iframe title="YouTube preview" src={toYouTubeEmbedUrl(editing.video_embed_url)} className="h-full w-full" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" /></div>}
               </Field>
             )}
 
