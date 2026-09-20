@@ -1,7 +1,7 @@
 export default function Logo({ className = 'h-10 w-10', dark = false }) {
-  const shell = dark ? '#ffffff' : '#0b1e36';
+  const shell = dark ? '#ffffff' : '#004386';
   const mark = '#c32b41';
-  const letter = dark ? '#0b1e36' : '#ffffff';
+  const letter = dark ? '#004386' : '#ffffff';
 
   return (
     <svg viewBox="0 0 64 64" className={className} role="img" aria-label="QIMA emblem">
