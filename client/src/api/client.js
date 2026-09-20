@@ -67,6 +67,9 @@ export const api = {
   team: {
     list: (signal) => request('/team', { signal }),
   },
+  homeAbout: {
+    get: (signal) => request('/home-about', { signal }),
+  },
   categories: {
     list: (signal) => request('/categories', { signal }),
   },
@@ -119,6 +122,10 @@ export const adminApi = {
     create: (data) => request('/team', { method: 'POST', auth: true, body: imageFormData(data, 'image') }),
     update: (id, data) => request(`/team/${id}`, { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
     remove: (id) => request(`/team/${id}`, { method: 'DELETE', auth: true }),
+  },
+  homeAbout: {
+    get: () => request('/home-about'),
+    save: (data) => request('/home-about', { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
   },
   categories: {
     list: () => request('/categories'),

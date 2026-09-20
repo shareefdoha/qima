@@ -42,15 +42,14 @@ const STAT_META = [
 
 export default function Home() {
   const { settings } = useSettings();
-  const { data: about } = useFetch((signal) => api.about.getAll(signal));
+  const { data: homeAbout } = useFetch((signal) => api.homeAbout.get(signal));
   const { data: events, loading: eventsLoading } = useFetch((signal) =>
     api.events.list('?scope=upcoming&limit=3', signal)
   );
   const { data: team } = useFetch((signal) => api.team.list(signal));
 
-  const history = about?.sections?.history;
-  const aboutImage = settings.home_about_image_url || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=85';
-  const overview = history?.content?.split('\n').filter(Boolean).slice(0, 2) || [
+  const aboutImage = homeAbout?.image_url || settings.home_about_image_url || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=85';
+  const overview = homeAbout?.description?.split('\n').filter(Boolean) || [
     'The Qatar Indian Management Association brings together Indian management professionals working across Qatar’s diverse economy. We create a trusted space for people to learn, exchange ideas and build meaningful professional relationships.',
     'As an affiliate of the All India Management Association, QIMA connects members with knowledge, leadership development and a community committed to contributing positively to Qatar’s future.',
   ];
@@ -97,7 +96,7 @@ export default function Home() {
               About QIMA
             </span>
             <h2 className="mt-5 max-w-xl text-3xl font-bold leading-tight text-navy-900 sm:text-4xl lg:text-[2.75rem]">
-              Empowering management professionals in Qatar
+              {homeAbout?.title || 'Empowering Management Professionals in Qatar'}
             </h2>
             <div className="mt-6 max-w-xl space-y-4 text-base leading-relaxed text-navy-700 sm:text-lg">
               {overview.map((paragraph, index) => <p key={index}>{paragraph}</p>)}

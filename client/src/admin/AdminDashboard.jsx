@@ -17,12 +17,14 @@ import GalleryTab from './tabs/GalleryTab.jsx';
 import SettingsTab from './tabs/SettingsTab.jsx';
 import MessagesTab from './tabs/MessagesTab.jsx';
 import CategoriesTab from './tabs/CategoriesTab.jsx';
+import HomeAboutTab from './tabs/HomeAboutTab.jsx';
 
 const TABS = [
   { key: 'about', label: 'About Us Content', Icon: FileText, Component: AboutTab },
   { key: 'banners', label: 'Hero Banners', Icon: ImageIcon, Component: BannersTab },
   { key: 'team', label: 'Management Team', Icon: Users, Component: TeamTab },
   { key: 'categories', label: 'Team Categories', Icon: FolderCog, Component: CategoriesTab },
+  { key: 'home-about', label: 'Home About Section', Icon: ImageIcon, Component: HomeAboutTab },
   { key: 'events', label: 'Events', Icon: CalendarDays, Component: EventsTab },
   { key: 'gallery', label: 'Gallery', Icon: Images, Component: GalleryTab },
   { key: 'settings', label: 'Settings & Forms', Icon: SettingsIcon, Component: SettingsTab },
