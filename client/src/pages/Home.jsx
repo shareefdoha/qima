@@ -109,6 +109,17 @@ export default function Home() {
                     <p className="text-sm font-semibold text-navy-900">{leadership[0].name}</p>
                     <p className="text-xs text-navy-500">{leadership[0].designation}, QIMA</p>
                   </div>
+ <div className="lg:col-span-6">
+    <div className="overflow-hidden rounded-3xl">
+      <img
+        src="/images/president.jpg"
+        alt="President of QIMA"
+        className="h-[420px] w-full object-cover"
+        loading="lazy"
+      />
+    </div>
+  </div>
+                  
                 </div>
               )}
             </div>
