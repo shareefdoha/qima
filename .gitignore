@@ -5,4 +5,5 @@ dist/
 .env.production
 *.log
 /server/uploads/
+/server/public/
 .DS_Store

@@ -18,6 +18,7 @@ import eventRoutes from './routes/events.js';
 import galleryRoutes from './routes/gallery.js';
 import settingRoutes from './routes/settings.js';
 import contactRoutes from './routes/contact.js';
+import categoryRoutes from './routes/categories.js';
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
@@ -60,6 +61,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/about', aboutRoutes);
 app.use('/api/banners', bannerRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/settings', settingRoutes);

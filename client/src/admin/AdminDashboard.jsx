@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FileText, ImageIcon, Users, CalendarDays, Images, Settings as SettingsIcon,
-  Inbox, LogOut, ExternalLink, Menu, X,
+  Inbox, LogOut, ExternalLink, Menu, X, FolderCog,
 } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
 import { useAdminAuth } from './AuthContext.jsx';
@@ -16,11 +16,13 @@ import EventsTab from './tabs/EventsTab.jsx';
 import GalleryTab from './tabs/GalleryTab.jsx';
 import SettingsTab from './tabs/SettingsTab.jsx';
 import MessagesTab from './tabs/MessagesTab.jsx';
+import CategoriesTab from './tabs/CategoriesTab.jsx';
 
 const TABS = [
   { key: 'about', label: 'About Us Content', Icon: FileText, Component: AboutTab },
   { key: 'banners', label: 'Hero Banners', Icon: ImageIcon, Component: BannersTab },
   { key: 'team', label: 'Management Team', Icon: Users, Component: TeamTab },
+  { key: 'categories', label: 'Team Categories', Icon: FolderCog, Component: CategoriesTab },
   { key: 'events', label: 'Events', Icon: CalendarDays, Component: EventsTab },
   { key: 'gallery', label: 'Gallery', Icon: Images, Component: GalleryTab },
   { key: 'settings', label: 'Settings & Forms', Icon: SettingsIcon, Component: SettingsTab },

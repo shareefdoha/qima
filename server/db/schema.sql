@@ -44,25 +44,39 @@ CREATE TABLE IF NOT EXISTS `banners` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
--- 3. team_members — Management Board / Executive Committee /
---                   Office Bearers / Advisory Council
+-- 3. team_categories — admin-managed groups for the public team page
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `team_categories` (
+  `id`            INT AUTO_INCREMENT PRIMARY KEY,
+  `name`          VARCHAR(100) NOT NULL UNIQUE,
+  `display_order` INT DEFAULT 0,
+  `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- 4. team_members — each member belongs to one managed category
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `team_members` (
   `id`            INT AUTO_INCREMENT PRIMARY KEY,
   `name`          VARCHAR(255) NOT NULL,
   `designation`   VARCHAR(255) NOT NULL,
   `role_category` VARCHAR(100) DEFAULT 'Executive Committee',
+  `category_id`   INT NULL,
   `bio`           TEXT,
   `image_url`     TEXT,
   `linkedin_url`  VARCHAR(255),
   `email`         VARCHAR(255),
   `display_order` INT DEFAULT 0,
   `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  INDEX `idx_team_category_order` (`role_category`, `display_order`)
+  INDEX `idx_team_category_order` (`role_category`, `display_order`),
+  INDEX `idx_team_category_id_order` (`category_id`, `display_order`),
+  CONSTRAINT `fk_team_members_category`
+    FOREIGN KEY (`category_id`) REFERENCES `team_categories`(`id`)
+    ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
--- 4. events — seminars / conferences, each with its own Google Form
+-- 5. events — seminars / conferences, each with its own Google Form
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `events` (
   `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -78,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `events` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
--- 5. settings — global key/value config (membership form URL, socials, …)
+-- 6. settings — global key/value config (membership form URL, socials, …)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `settings` (
   `id`            INT AUTO_INCREMENT PRIMARY KEY,
@@ -87,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
--- 6. gallery — photos and embedded videos
+-- 7. gallery — photos and embedded videos
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `gallery` (
   `id`              INT AUTO_INCREMENT PRIMARY KEY,
@@ -100,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `gallery` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
--- 7. contact_messages — submissions from /contact
+-- 8. contact_messages — submissions from /contact
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `contact_messages` (
   `id`         INT AUTO_INCREMENT PRIMARY KEY,
@@ -114,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `contact_messages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
--- 8. admin_users — /admin authentication (bcrypt hashes, JWT sessions)
+-- 9. admin_users — /admin authentication (bcrypt hashes, JWT sessions)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `admin_users` (
   `id`            INT AUTO_INCREMENT PRIMARY KEY,
@@ -130,6 +144,13 @@ CREATE TABLE IF NOT EXISTS `admin_users` (
 -- ===========================================================================
 --  SEED DATA  (safe to re-run: INSERT ... ON DUPLICATE KEY UPDATE / guards)
 -- ===========================================================================
+
+INSERT INTO `team_categories` (`name`, `display_order`) VALUES
+('Management Board', 1),
+('Office Bearers', 2),
+('Executive Committee', 3),
+('Advisory Council', 4)
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
 -- --- About Us content -------------------------------------------------------
 INSERT INTO `about_content` (`section_key`, `title`, `content`) VALUES

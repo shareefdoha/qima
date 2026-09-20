@@ -67,6 +67,9 @@ export const api = {
   team: {
     list: (signal) => request('/team', { signal }),
   },
+  categories: {
+    list: (signal) => request('/categories', { signal }),
+  },
   events: {
     list: (params = '', signal) => request(`/events${params}`, { signal }),
     grouped: (signal) => request('/events/grouped', { signal }),
@@ -116,6 +119,12 @@ export const adminApi = {
     create: (data) => request('/team', { method: 'POST', auth: true, body: imageFormData(data, 'image') }),
     update: (id, data) => request(`/team/${id}`, { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
     remove: (id) => request(`/team/${id}`, { method: 'DELETE', auth: true }),
+  },
+  categories: {
+    list: () => request('/categories'),
+    create: (data) => request('/categories', { method: 'POST', auth: true, body: data }),
+    update: (id, data) => request(`/categories/${id}`, { method: 'PUT', auth: true, body: data }),
+    remove: (id) => request(`/categories/${id}`, { method: 'DELETE', auth: true }),
   },
   events: {
     list: () => request('/events'),

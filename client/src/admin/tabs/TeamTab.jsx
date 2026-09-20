@@ -2,17 +2,16 @@ import { useMemo, useState } from 'react';
 import { Plus, Pencil, Trash2, Users, Linkedin, Mail } from 'lucide-react';
 import { adminApi, assetUrl } from '../../api/client.js';
 import { useResource } from '../useResource.js';
+import { useFetch } from '../../hooks/useApi.js';
 import {
   TabPanel, Field, TextInput, TextArea, Select, Banner, Modal, ConfirmDialog, SavingButton,
 } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
 
-const CATEGORIES = ['Management Board', 'Office Bearers', 'Executive Committee', 'Advisory Council'];
-
 const BLANK = {
   name: '',
   designation: '',
-  role_category: 'Executive Committee',
+  category_id: '',
   bio: '',
   image_url: '',
   linkedin_url: '',
@@ -25,9 +24,10 @@ export default function TeamTab() {
   const [editing, setEditing] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [filter, setFilter] = useState('All');
+  const { data: categories = [] } = useFetch(() => adminApi.categories.list());
 
   const visible = useMemo(
-    () => (filter === 'All' ? r.items : r.items.filter((m) => m.role_category === filter)),
+    () => (filter === 'All' ? r.items : r.items.filter((m) => String(m.category_id) === filter)),
     [r.items, filter]
   );
 
@@ -57,16 +57,16 @@ export default function TeamTab() {
       ) : (
         <>
           <div className="mb-6 flex flex-wrap gap-2">
-            {['All', ...CATEGORIES].map((c) => (
+            {[{ id: 'All', name: 'All' }, ...categories].map((c) => (
               <button
-                key={c}
+                key={c.id}
                 type="button"
-                onClick={() => setFilter(c)}
+                onClick={() => setFilter(String(c.id))}
                 className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${
-                  filter === c ? 'bg-navy-900 text-white' : 'border border-navy-200 bg-white text-navy-700'
+                  filter === String(c.id) ? 'bg-navy-900 text-white' : 'border border-navy-200 bg-white text-navy-700'
                 }`}
               >
-                {c}
+                {c.name}
               </button>
             ))}
           </div>
@@ -116,7 +116,7 @@ export default function TeamTab() {
                       <div className="flex justify-end gap-1">
                         <button
                           type="button"
-                          onClick={() => setEditing({ ...m })}
+                    onClick={() => setEditing({ ...m, category_id: String(m.category_id) })}
                           aria-label={`Edit ${m.name}`}
                           className="rounded-lg p-2 text-navy-400 hover:bg-navy-100 hover:text-navy-900"
                         >
@@ -160,13 +160,11 @@ export default function TeamTab() {
             <div className="grid gap-5 sm:grid-cols-3">
               <div className="sm:col-span-2">
                 <Field label="Role category" hint="Groups the member on the /team page.">
-                  <Select
-                    value={editing.role_category}
-                    onChange={(e) => setEditing({ ...editing, role_category: e.target.value })}
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
+                  <Select value={editing.category_id || ''} required onChange={(e) => setEditing({ ...editing, category_id: e.target.value })}>
+                    <option value="" disabled>Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
                       </option>
                     ))}
                   </Select>

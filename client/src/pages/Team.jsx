@@ -5,13 +5,6 @@ import TeamCard from '../components/TeamCard.jsx';
 import { api } from '../api/client.js';
 import { useFetch } from '../hooks/useApi.js';
 
-const GROUP_BLURBS = {
-  'Management Board': 'The elected leadership responsible for QIMA’s strategy, governance and external representation.',
-  'Office Bearers': 'The officers who run the association day to day — membership, finance, records and operations.',
-  'Executive Committee': 'Committee chairs who deliver the annual programme of seminars, forums and member services.',
-  'Advisory Council': 'Senior industry figures who advise the board on long-term direction and institutional matters.',
-};
-
 export default function Team() {
   const { data, loading, error, reload } = useFetch((signal) => api.team.list(signal));
   const [filter, setFilter] = useState('All');
@@ -20,7 +13,7 @@ export default function Team() {
   const grouped = data?.grouped || {};
 
   const visible = useMemo(
-    () => (filter === 'All' ? categories : categories.filter((c) => c === filter)),
+    () => (filter === 'All' ? categories : categories.filter((c) => String(c.id) === filter)),
     [filter, categories]
   );
 
@@ -49,20 +42,20 @@ export default function Team() {
             <>
               {/* Category filter */}
               <div className="flex flex-wrap items-center gap-2">
-                {['All', ...categories].map((cat) => (
+                {[{ id: 'All', name: 'All', member_count: data?.list?.length || 0 }, ...categories].map((cat) => (
                   <button
-                    key={cat}
+                    key={cat.id}
                     type="button"
-                    onClick={() => setFilter(cat)}
+                    onClick={() => setFilter(String(cat.id))}
                     className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                      filter === cat
+                      filter === String(cat.id)
                         ? 'bg-navy-900 text-white shadow-sm'
                         : 'border border-navy-200 bg-white text-navy-700 hover:border-navy-900'
                     }`}
                   >
-                    {cat}
-                    <span className={`ml-2 text-xs ${filter === cat ? 'text-white/60' : 'text-navy-400'}`}>
-                      {cat === 'All' ? data.list.length : grouped[cat]?.length}
+                    {cat.name}
+                    <span className={`ml-2 text-xs ${filter === String(cat.id) ? 'text-white/60' : 'text-navy-400'}`}>
+                      {cat.member_count}
                     </span>
                   </button>
                 ))}
@@ -70,24 +63,19 @@ export default function Team() {
 
               <div className="mt-14 space-y-20">
                 {visible.map((category) => (
-                  <div key={category}>
+                  <div key={category.id}>
                     <div className="flex flex-wrap items-end justify-between gap-4 border-b border-navy-100 pb-5">
                       <div>
-                        <h2 className="text-2xl font-bold text-navy-900 sm:text-3xl">{category}</h2>
-                        {GROUP_BLURBS[category] && (
-                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy-600">
-                            {GROUP_BLURBS[category]}
-                          </p>
-                        )}
+                        <h2 className="text-2xl font-bold text-navy-900 sm:text-3xl">{category.name}</h2>
                       </div>
                       <span className="rounded-full bg-accent-50 px-3 py-1 text-xs font-semibold text-accent-700">
-                        {grouped[category].length}{' '}
-                        {grouped[category].length === 1 ? 'member' : 'members'}
+                        {category.member_count}{' '}
+                        {category.member_count === 1 ? 'member' : 'members'}
                       </span>
                     </div>
 
                     <div className="mt-8 grid gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                      {grouped[category].map((member) => (
+                    {grouped[category.name].map((member) => (
                         <TeamCard key={member.id} member={member} />
                       ))}
                     </div>
