@@ -19,7 +19,7 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-async function main() {
+export async function setupDatabase() {
   const rawSql = await fs.readFile(path.join(__dirname, 'schema.sql'), 'utf8');
   const dbName = process.env.DB_NAME || 'qima_db';
   const sql = rawSql
@@ -59,7 +59,12 @@ async function main() {
   await conn.end();
 }
 
-main().catch((err) => {
-  console.error('✗ Database setup failed:', err.message);
-  process.exit(1);
-});
+const isDirectRun = process.argv[1]
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  setupDatabase().catch((err) => {
+    console.error('✗ Database setup failed:', err.message);
+    process.exit(1);
+  });
+}

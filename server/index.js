@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 dotenv.config(); // must run before any module reads process.env
 
 import { assertDbConnection } from './db/pool.js';
+import { setupDatabase } from './db/setup.js';
 import authRoutes from './routes/auth.js';
 import aboutRoutes from './routes/about.js';
 import bannerRoutes from './routes/banners.js';
@@ -99,16 +100,24 @@ app.use((err, _req, res, _next) => {
 });
 
 // ------------------------------------------------------------- bootstrap ----
-app.listen(PORT, async () => {
-  console.log(`\n  QIMA API listening on http://localhost:${PORT}`);
-  console.log(`  CORS origins: ${allowedOrigins.join(', ')}`);
-  try {
-    await assertDbConnection();
-    console.log('  MySQL: connected\n');
-  } catch (err) {
-    console.warn(`  MySQL: NOT connected — ${err.message}`);
-    console.warn('  Run `npm run db:setup` after configuring .env\n');
-  }
+async function start() {
+  await setupDatabase();
+
+  app.listen(PORT, async () => {
+    console.log(`\n  QIMA API listening on http://localhost:${PORT}`);
+    console.log(`  CORS origins: ${allowedOrigins.join(', ')}`);
+    try {
+      await assertDbConnection();
+      console.log('  MySQL: connected\n');
+    } catch (err) {
+      console.warn(`  MySQL: NOT connected — ${err.message}`);
+    }
+  });
+}
+
+start().catch((err) => {
+  console.error('✗ QIMA startup failed:', err.message);
+  process.exit(1);
 });
 
 export default app;
