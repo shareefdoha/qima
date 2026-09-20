@@ -81,7 +81,7 @@ export default function Home() {
       {/* -------------------------------------------- Welcome message ----- */}
       <section className="py-20 sm:py-28">
         <div className="container-qima grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-6">
             <span className="eyebrow">
               <span className="h-px w-6 bg-current" aria-hidden="true" />
               Welcome
@@ -114,7 +114,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-6">
             {president?.content ? (
               <div className="rich-text space-y-5 text-[17px] leading-[1.75] text-navy-700">
                 {president.content.split('\n').filter(Boolean).map((para, i) => (
