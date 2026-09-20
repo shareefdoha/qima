@@ -47,12 +47,14 @@ async function main() {
   await conn.execute(
     `INSERT INTO admin_users (name, email, password_hash, role)
      VALUES (?, ?, ?, 'admin')
-     ON DUPLICATE KEY UPDATE name = VALUES(name)`,
+     ON DUPLICATE KEY UPDATE
+       name = VALUES(name),
+       password_hash = VALUES(password_hash),
+       role = VALUES(role)`,
     [name, email, hash]
   );
 
-  console.log(`✓ Admin account ready →  ${email}  /  ${password}`);
-  console.log('  Existing admin passwords are preserved on later restarts.');
+  console.log(`✓ Admin account synchronized → ${email}`);
 
   await conn.end();
 }
