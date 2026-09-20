@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight, Users, CalendarDays, Building2, Award, Quote,
-  GraduationCap, Handshake, Lightbulb, HeartHandshake, Briefcase, Target,
+  ArrowRight, Users, CalendarDays, Building2, Award,
+  GraduationCap, Handshake, Lightbulb, HeartHandshake,
 } from 'lucide-react';
 import HeroBanner from '../components/HeroBanner.jsx';
 import EventCard from '../components/EventCard.jsx';
 import { SectionHeading, LoadingBlock } from '../components/ui.jsx';
-import { api } from '../api/client.js';
+import { api, assetUrl } from '../api/client.js';
 import { useFetch } from '../hooks/useApi.js';
 import { useSettings } from '../context/SettingsContext.jsx';
 
@@ -48,9 +48,12 @@ export default function Home() {
   );
   const { data: team } = useFetch((signal) => api.team.list(signal));
 
-  const president = about?.sections?.president_message;
-  const mission = about?.sections?.mission;
-  const vision = about?.sections?.vision;
+  const history = about?.sections?.history;
+  const aboutImage = settings.home_about_image_url || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=85';
+  const overview = history?.content?.split('\n').filter(Boolean).slice(0, 2) || [
+    'The Qatar Indian Management Association brings together Indian management professionals working across Qatar’s diverse economy. We create a trusted space for people to learn, exchange ideas and build meaningful professional relationships.',
+    'As an affiliate of the All India Management Association, QIMA connects members with knowledge, leadership development and a community committed to contributing positively to Qatar’s future.',
+  ];
 
   const leadership = (team?.list || [])
     .filter((m) => ['Management Board', 'Office Bearers'].includes(m.role_category))
@@ -78,83 +81,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* -------------------------------------------- Welcome message ----- */}
-      <section className="py-20 sm:py-28">
-        <div className="container-qima grid items-start gap-12 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-6">
-            <span className="eyebrow">
-              <span className="h-px w-6 bg-current" aria-hidden="true" />
-              Welcome
-            </span>
-            <h2 className="mt-4 text-3xl font-bold leading-tight text-navy-900 sm:text-4xl lg:text-[2.75rem]">
-              {president?.title || 'Message from the President'}
-            </h2>
-            <div className="mt-8 rounded-2xl border border-navy-100 bg-sand-100 p-6">
-              <Quote className="h-7 w-7 text-accent-500" />
-              <p className="mt-3 font-display text-lg italic leading-relaxed text-navy-800">
-                Professionals grow fastest when they learn from one another — QIMA exists to make that
-                exchange happen deliberately.
-              </p>
-              {leadership[0] && (
-                <div className="mt-6 flex items-center gap-3 border-t border-navy-200/60 pt-5">
-                  {leadership[0].image_url && (
-                    <img
-                      src={leadership[0].image_url}
-                      alt=""
-                      className="h-12 w-12 rounded-full object-cover"
-                      loading="lazy"
-                    />
-                  )}
-                  <div>
-                    <p className="text-sm font-semibold text-navy-900">{leadership[0].name}</p>
-                    <p className="text-xs text-navy-500">{leadership[0].designation}, QIMA</p>
-                  </div>
- <div className="lg:col-span-6">
-    <div className="overflow-hidden rounded-3xl">
-      <img
-        src="/images/president.jpg"
-        alt="President of QIMA"
-        className="h-[420px] w-full object-cover"
-        loading="lazy"
-      />
-    </div>
-  </div>
-                  
-                </div>
-              )}
+      {/* ---------------------------------------- About QIMA overview ----- */}
+      <section className="border-y border-navy-100 bg-slate-50 py-20 sm:py-28">
+        <div className="container-qima grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <div className="relative order-2 lg:order-1">
+            <div className="absolute -inset-3 rounded-[2rem] border border-accent-500/20 bg-accent-50 sm:-inset-4" aria-hidden="true" />
+            <div className="relative overflow-hidden rounded-3xl bg-navy-100 shadow-lift">
+              <img src={assetUrl(aboutImage)} alt="QIMA members at a professional event" className="h-[320px] w-full object-cover sm:h-[420px]" loading="lazy" />
             </div>
           </div>
 
-          <div className="lg:col-span-6">
-            {president?.content ? (
-              <div className="rich-text space-y-5 text-[17px] leading-[1.75] text-navy-700">
-                {president.content.split('\n').filter(Boolean).map((para, i) => (
-                  <p key={i} className={i === 0 ? 'text-lg font-medium text-navy-900' : ''}>
-                    {para}
-                  </p>
-                ))}
-              </div>
-            ) : (
-              <LoadingBlock className="py-16" label="Loading welcome message…" />
-            )}
-
-            <div className="mt-10 grid gap-5 sm:grid-cols-2">
-              {[{ item: mission, Icon: Target }, { item: vision, Icon: Briefcase }].map(
-                ({ item, Icon }, i) =>
-                  item && (
-                    <div key={i} className="card p-6">
-                      <Icon className="h-6 w-6 text-accent-600" />
-                      <h3 className="mt-4 text-lg font-bold text-navy-900">{item.title}</h3>
-                      <p className="mt-2 line-clamp-5 text-sm leading-relaxed text-navy-600">
-                        {item.content}
-                      </p>
-                    </div>
-                  )
-              )}
+          <div className="order-1 lg:order-2">
+            <span className="eyebrow !text-accent-600">
+              <span className="h-px w-7 bg-current" aria-hidden="true" />
+              About QIMA
+            </span>
+            <h2 className="mt-5 max-w-xl text-3xl font-bold leading-tight text-navy-900 sm:text-4xl lg:text-[2.75rem]">
+              Empowering management professionals in Qatar
+            </h2>
+            <div className="mt-6 max-w-xl space-y-4 text-base leading-relaxed text-navy-700 sm:text-lg">
+              {overview.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
             </div>
-
-            <Link to="/about" className="btn-outline mt-8">
-              Read more about QIMA
+            <Link to="/about" className="btn-primary mt-9">
+              Read More About Us
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

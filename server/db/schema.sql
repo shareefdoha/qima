@@ -302,6 +302,7 @@ WHERE NOT EXISTS (SELECT 1 FROM `gallery`);
 INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
 ('membership_google_form_url', 'https://docs.google.com/forms/d/e/REPLACE_WITH_YOUR_FORM_ID/viewform'),
 ('membership_intro',           'Membership is open to management professionals of Indian origin working in Qatar, across every industry and level of seniority.'),
+('home_about_image_url',       'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=85'),
 ('contact_email',              'info@qima.qa'),
 ('contact_phone',              '+974 4000 0000'),
 ('contact_address',            'QIMA Secretariat, Al Sadd, Doha, State of Qatar'),
