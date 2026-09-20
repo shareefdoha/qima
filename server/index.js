@@ -21,7 +21,7 @@ import contactRoutes from './routes/contact.js';
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const clientDist = path.resolve(__dirname, '../client/dist');
+const clientDist = path.resolve(__dirname, 'public');
 
 app.set('trust proxy', 1); // correct client IPs behind nginx, for the rate limiters
 
