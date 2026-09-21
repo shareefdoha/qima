@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, CalendarDays, ExternalLink } from 'lucide-react';
-import { adminApi } from '../../api/client.js';
+import { Plus, Pencil, Trash2, CalendarDays, ExternalLink, ImageIcon } from 'lucide-react';
+import { adminApi, assetUrl } from '../../api/client.js';
 import { useResource } from '../useResource.js';
 import { TabPanel, Field, TextInput, TextArea, Banner, Modal, ConfirmDialog, SavingButton } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
@@ -155,7 +155,22 @@ export default function EventsTab() {
               />
             </Field>
 
-            <Field label="Cover image URL">
+            <Field label="Cover image" hint="Upload a JPEG, PNG, WebP, or GIF (maximum 8 MB). Leave blank to keep the current image when editing.">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })}
+                className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200"
+              />
+              {(editing.image || editing.image_url) && (
+                <div className="relative mt-3 overflow-hidden rounded-xl bg-navy-100">
+                  <img src={editing.image ? URL.createObjectURL(editing.image) : assetUrl(editing.image_url)} alt="Event cover preview" className="h-40 w-full object-cover" />
+                  <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-navy-700"><ImageIcon className="mr-1 inline h-3.5 w-3.5" />Preview</span>
+                </div>
+              )}
+            </Field>
+
+            <Field label="Cover image URL" hint="Optional alternative to upload. A newly uploaded file takes priority.">
               <TextInput
                 value={editing.image_url || ''}
                 onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}

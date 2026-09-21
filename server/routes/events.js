@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { pool } from '../db/pool.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/asyncHandler.js';
+import { imageUpload, uploadedPath } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -60,14 +61,14 @@ router.get(
   })
 );
 
-function readBody(body = {}) {
+async function readBody(body = {}, file) {
   return [
     String(body.title || '').trim(),
     body.event_date || null,
     body.event_time ?? null,
     body.location ?? null,
     body.description ?? null,
-    body.image_url ?? null,
+    (await uploadedPath(file)) || body.image_url || null,
     body.google_form_url ?? null,
   ];
 }
@@ -76,8 +77,9 @@ function readBody(body = {}) {
 router.post(
   '/',
   requireAuth,
+  imageUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const values = readBody(req.body);
+    const values = await readBody(req.body, req.file);
     if (!values[0] || !values[1]) {
       return res.status(400).json({ error: 'Title and event_date (YYYY-MM-DD) are required.' });
     }
@@ -96,8 +98,9 @@ router.post(
 router.put(
   '/:id',
   requireAuth,
+  imageUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const values = readBody(req.body);
+    const values = await readBody(req.body, req.file);
     if (!values[0] || !values[1]) {
       return res.status(400).json({ error: 'Title and event_date (YYYY-MM-DD) are required.' });
     }

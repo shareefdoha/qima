@@ -149,8 +149,8 @@ export const adminApi = {
   },
   events: {
     list: () => request('/events'),
-    create: (data) => request('/events', { method: 'POST', auth: true, body: data }),
-    update: (id, data) => request(`/events/${id}`, { method: 'PUT', auth: true, body: data }),
+    create: (data) => request('/events', { method: 'POST', auth: true, body: imageFormData(data, 'image') }),
+    update: (id, data) => request(`/events/${id}`, { method: 'PUT', auth: true, body: imageFormData(data, 'image') }),
     remove: (id) => request(`/events/${id}`, { method: 'DELETE', auth: true }),
   },
   gallery: {

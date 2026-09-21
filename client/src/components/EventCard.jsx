@@ -1,4 +1,5 @@
 import { Calendar, Clock, MapPin, ExternalLink } from 'lucide-react';
+import { assetUrl } from '../api/client.js';
 
 export function formatEventDate(value) {
   if (!value) return { day: '--', month: '', full: '' };
@@ -25,7 +26,7 @@ export default function EventCard({ event, past = false }) {
       <div className="relative aspect-16/10 overflow-hidden bg-navy-100">
         {event.image_url ? (
           <img
-            src={event.image_url}
+            src={assetUrl(event.image_url)}
             alt=""
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
