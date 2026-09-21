@@ -24,7 +24,9 @@ export default function TeamTab() {
   const [editing, setEditing] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [filter, setFilter] = useState('All');
-  const { data: categories = [] } = useFetch(() => adminApi.categories.list());
+  const { data: categoryData } = useFetch(() => adminApi.categories.list());
+  // Keep the dashboard usable even if a proxy returns an unexpected payload.
+  const categories = Array.isArray(categoryData) ? categoryData : [];
 
   const visible = useMemo(
     () => (filter === 'All' ? r.items : r.items.filter((m) => String(m.category_id) === filter)),
