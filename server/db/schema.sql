@@ -65,6 +65,17 @@ CREATE TABLE IF NOT EXISTS `home_about` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
+-- 5. uploaded_media — deployment-safe local image uploads
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `uploaded_media` (
+  `id`          CHAR(36) PRIMARY KEY,
+  `filename`    VARCHAR(255) NOT NULL,
+  `mime_type`   VARCHAR(100) NOT NULL,
+  `data`        LONGBLOB NOT NULL,
+  `created_at`  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
 -- 4. team_members — each member belongs to one managed category
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `team_members` (

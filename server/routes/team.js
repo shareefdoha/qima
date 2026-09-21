@@ -53,13 +53,13 @@ router.get(
   })
 );
 
-function readBody(body = {}, file) {
+async function readBody(body = {}, file) {
   return [
     String(body.name || '').trim(),
     String(body.designation || '').trim(),
     Number(body.category_id) || null,
     body.bio ?? null,
-    uploadedPath(file) || body.image_url || null,
+    (await uploadedPath(file)) || body.image_url || null,
     body.linkedin_url ?? null,
     body.email ?? null,
     Number(body.display_order) || 0,
@@ -72,7 +72,7 @@ router.post(
   requireAuth,
   imageUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const values = readBody(req.body, req.file);
+    const values = await readBody(req.body, req.file);
     if (!values[0] || !values[1]) {
       return res.status(400).json({ error: 'Name and designation are required.' });
     }
@@ -96,7 +96,7 @@ router.put(
   requireAuth,
   imageUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const values = readBody(req.body, req.file);
+    const values = await readBody(req.body, req.file);
     if (!values[0] || !values[1]) {
       return res.status(400).json({ error: 'Name and designation are required.' });
     }

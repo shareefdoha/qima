@@ -5,6 +5,7 @@
  * Prod: VITE_API_URL=https://api.qima.qa
  */
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const REQUEST_TIMEOUT_MS = 15_000;
 export const assetUrl = (value = '') => (String(value).startsWith('/') ? `${BASE}${value}` : value);
 
 export const TOKEN_KEY = 'qima_admin_token';
@@ -23,6 +24,14 @@ export class ApiError extends Error {
 
 async function request(path, { method = 'GET', body, auth = false, signal } = {}) {
   const headers = {};
+  const controller = new AbortController();
+  let timedOut = false;
+  const onCallerAbort = () => controller.abort();
+  const timeoutId = window.setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, REQUEST_TIMEOUT_MS);
+  signal?.addEventListener('abort', onCallerAbort, { once: true });
   const isForm = body instanceof FormData;
   if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   if (auth) {
@@ -35,14 +44,19 @@ async function request(path, { method = 'GET', body, auth = false, signal } = {}
     res = await fetch(`${BASE}/api${path}`, {
       method,
       headers,
-      signal,
+      signal: controller.signal,
       body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
   } catch (err) {
-    if (err.name === 'AbortError') throw err;
+    if (err.name === 'AbortError') {
+      if (timedOut) throw new ApiError('The server took too long to respond. Please try again.', 408);
+      throw err;
+    }
     throw new ApiError('Could not reach the server. Is the API running?', 0);
+  } finally {
+    window.clearTimeout(timeoutId);
+    signal?.removeEventListener('abort', onCallerAbort);
   }
-
   if (res.status === 204) return null;
 
   const payload = await res.json().catch(() => ({}));

@@ -19,7 +19,7 @@ router.put('/', requireAuth, imageUpload.single('image'), asyncHandler(async (re
   if (!title || !description) return res.status(400).json({ error: 'Title and description are required.' });
 
   const [currentRows] = await pool.query('SELECT image_url FROM home_about WHERE id = 1');
-  const imageUrl = uploadedPath(req.file) || currentRows[0]?.image_url || null;
+  const imageUrl = (await uploadedPath(req.file)) || currentRows[0]?.image_url || null;
   await pool.execute(`INSERT INTO home_about (id, title, description, image_url)
     VALUES (1, ?, ?, ?)
     ON DUPLICATE KEY UPDATE title = VALUES(title), description = VALUES(description), image_url = VALUES(image_url)`,

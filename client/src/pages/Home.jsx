@@ -40,6 +40,8 @@ const STAT_META = [
   { key: 'stat_founded_year', label: 'Serving Qatar Since', Icon: Award, suffix: '' },
 ];
 
+const DEFAULT_ABOUT_IMAGE = 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=85';
+
 export default function Home() {
   const { settings } = useSettings();
   const { data: homeAbout } = useFetch((signal) => api.homeAbout.get(signal));
@@ -48,7 +50,7 @@ export default function Home() {
   );
   const { data: team } = useFetch((signal) => api.team.list(signal));
 
-  const aboutImage = homeAbout?.image_url || settings.home_about_image_url || 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=85';
+  const aboutImage = homeAbout?.image_url || settings.home_about_image_url || DEFAULT_ABOUT_IMAGE;
   const overview = homeAbout?.description?.split('\n').filter(Boolean) || [
     'The Qatar Indian Management Association brings together Indian management professionals working across Qatar’s diverse economy. We create a trusted space for people to learn, exchange ideas and build meaningful professional relationships.',
     'As an affiliate of the All India Management Association, QIMA connects members with knowledge, leadership development and a community committed to contributing positively to Qatar’s future.',
@@ -86,7 +88,7 @@ export default function Home() {
           <div className="relative order-2 lg:order-1">
             <div className="absolute -inset-3 rounded-[2rem] border border-accent-500/20 bg-accent-50 sm:-inset-4" aria-hidden="true" />
             <div className="relative overflow-hidden rounded-3xl bg-navy-100 shadow-lift">
-              <img src={assetUrl(aboutImage)} alt="QIMA members at a professional event" className="h-[320px] w-full object-cover sm:h-[420px]" loading="lazy" />
+              <img src={assetUrl(aboutImage)} alt="QIMA members at a professional event" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = DEFAULT_ABOUT_IMAGE; }} className="h-[320px] w-full object-cover sm:h-[420px]" loading="lazy" />
             </div>
           </div>
 

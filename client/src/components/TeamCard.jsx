@@ -1,14 +1,20 @@
+import { useEffect, useState } from 'react';
 import { Linkedin, Mail, User } from 'lucide-react';
 
 export default function TeamCard({ member }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => setImageFailed(false), [member.image_url]);
+
   return (
     <article className="card group flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
       <div className="relative aspect-4/5 overflow-hidden bg-navy-100">
-        {member.image_url ? (
+        {member.image_url && !imageFailed ? (
           <img
             src={member.image_url}
             alt={member.name}
             loading="lazy"
+            onError={() => setImageFailed(true)}
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           />
         ) : (

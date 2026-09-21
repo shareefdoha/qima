@@ -34,7 +34,7 @@ router.post(
   imageUpload.single('image'),
   asyncHandler(async (req, res) => {
     const { title = '', type = 'photo', url = null, video_embed_url = null } = req.body || {};
-    const photoUrl = uploadedPath(req.file) || url || null;
+    const photoUrl = (await uploadedPath(req.file)) || url || null;
     if (!String(title).trim()) return res.status(400).json({ error: 'Title is required.' });
     if (!['photo', 'video'].includes(type)) {
       return res.status(400).json({ error: "type must be 'photo' or 'video'." });
@@ -60,7 +60,7 @@ router.put(
   imageUpload.single('image'),
   asyncHandler(async (req, res) => {
     const { title = '', type = 'photo', url = null, video_embed_url = null } = req.body || {};
-    const photoUrl = uploadedPath(req.file) || url || null;
+    const photoUrl = (await uploadedPath(req.file)) || url || null;
     if (!String(title).trim()) return res.status(400).json({ error: 'Title is required.' });
     if (!['photo', 'video'].includes(type)) {
       return res.status(400).json({ error: "type must be 'photo' or 'video'." });
