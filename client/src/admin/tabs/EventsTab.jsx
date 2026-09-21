@@ -5,6 +5,7 @@ import { useResource } from '../useResource.js';
 import { TabPanel, Field, TextInput, TextArea, Banner, Modal, ConfirmDialog, SavingButton } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
 import { formatEventDate } from '../../components/EventCard.jsx';
+import { IMAGE_ACCEPT, IMAGE_HELPER, validateImageFile } from '../fileValidation.js';
 
 const BLANK = {
   title: '',
@@ -23,6 +24,10 @@ export default function EventsTab() {
 
   async function submit(e) {
     e.preventDefault();
+    if (!editing.title?.trim() || !editing.event_date || !editing.location?.trim() || !editing.description?.trim() || (!editing.image && !editing.image_url)) {
+      r.setBanner({ type: 'error', message: 'Title, date, location, description, and cover image are required.' });
+      return;
+    }
     const payload = { ...editing, event_date: String(editing.event_date).slice(0, 10) };
     const ok = await r.save(editing.id, payload, editing.id ? 'Event updated.' : 'Event created.');
     if (ok) setEditing(null);
@@ -139,27 +144,34 @@ export default function EventsTab() {
               </Field>
             </div>
 
-            <Field label="Location">
+            <Field label="Location" required>
               <TextInput
+                required
                 value={editing.location || ''}
                 onChange={(e) => setEditing({ ...editing, location: e.target.value })}
                 placeholder="QIMA Hall, Al Sadd, Doha"
               />
             </Field>
 
-            <Field label="Description">
+            <Field label="Description" required>
               <TextArea
+                required
                 rows={4}
                 value={editing.description || ''}
                 onChange={(e) => setEditing({ ...editing, description: e.target.value })}
               />
             </Field>
 
-            <Field label="Cover image" hint="Upload a JPEG, PNG, WebP, or GIF (maximum 8 MB). Leave blank to keep the current image when editing.">
+            <Field label="Cover image" required hint={IMAGE_HELPER}>
               <input
                 type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })}
+                accept={IMAGE_ACCEPT}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  const error = validateImageFile(file);
+                  if (error) { e.target.value = ''; r.setBanner({ type: 'error', message: error }); return; }
+                  setEditing({ ...editing, image: file });
+                }}
                 className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200"
               />
               {(editing.image || editing.image_url) && (

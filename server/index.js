@@ -102,7 +102,7 @@ app.use((err, _req, res, _next) => {
     return res.status(403).json({ error: err.message });
   }
   if (err?.name === 'MulterError') {
-    return res.status(400).json({ error: 'Upload failed. Select one image file no larger than 8 MB.' });
+    return res.status(400).json({ error: 'Upload failed. Images must be JPEG, PNG, or WEBP and no larger than 2 MB; videos must be MP4 or WEBM and no larger than 10 MB.' });
   }
 
   res.status(500).json({

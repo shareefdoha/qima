@@ -4,7 +4,8 @@ import { adminApi, assetUrl } from '../../api/client.js';
 import { useResource } from '../useResource.js';
 import { TabPanel, Field, TextInput, Select, Banner, Modal, ConfirmDialog, SavingButton } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
-import { toYouTubeEmbedUrl, youTubeThumbnail } from '../../utils/youtubeUtils.js';
+import { getYouTubeVideoId, toYouTubeEmbedUrl, youTubeThumbnail } from '../../utils/youtubeUtils.js';
+import { IMAGE_ACCEPT, IMAGE_HELPER, validateImageFile, YOUTUBE_HELPER } from '../fileValidation.js';
 
 const BLANK = { title: '', type: 'photo', url: '', video_embed_url: '' };
 
@@ -15,6 +16,18 @@ export default function GalleryTab() {
 
   async function submit(e) {
     e.preventDefault();
+    if (!editing.title?.trim()) {
+      r.setBanner({ type: 'error', message: 'Gallery title is required.' });
+      return;
+    }
+    if (editing.type === 'photo' && !editing.image && !editing.url) {
+      r.setBanner({ type: 'error', message: 'Upload a gallery photo before saving.' });
+      return;
+    }
+    if (editing.type === 'video' && !getYouTubeVideoId(editing.video_embed_url)) {
+      r.setBanner({ type: 'error', message: 'Enter a valid full YouTube video URL.' });
+      return;
+    }
     const ok = await r.save(editing.id, editing, editing.id ? 'Item updated.' : 'Item added.');
     if (ok) setEditing(null);
   }
@@ -92,15 +105,20 @@ export default function GalleryTab() {
             </Field>
 
             {editing.type === 'photo' ? (
-              <Field label="Photo upload" hint="Choose an image from your computer (maximum 8 MB). Leave blank to retain the existing image.">
-                <input type="file" accept="image/*" onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
+              <Field label="Photo upload" required hint={IMAGE_HELPER}>
+                <input type="file" accept={IMAGE_ACCEPT} onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  const error = validateImageFile(file);
+                  if (error) { e.target.value = ''; r.setBanner({ type: 'error', message: error }); return; }
+                  setEditing({ ...editing, image: file });
+                }} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
                 {(editing.image || editing.url) && <img src={editing.image ? URL.createObjectURL(editing.image) : assetUrl(editing.url)} alt="Preview" className="mt-3 h-28 w-full rounded-xl object-cover" />}
               </Field>
             ) : (
               <Field
                 label="YouTube video URL"
                 required
-                hint="Paste a YouTube watch, shorts, share, or embed URL."
+                hint={YOUTUBE_HELPER}
               >
                 <TextInput
                   required

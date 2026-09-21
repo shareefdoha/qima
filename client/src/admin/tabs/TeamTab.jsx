@@ -7,6 +7,7 @@ import {
   TabPanel, Field, TextInput, TextArea, Select, Banner, Modal, ConfirmDialog, SavingButton,
 } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
+import { IMAGE_ACCEPT, IMAGE_HELPER, validateImageFile } from '../fileValidation.js';
 
 const BLANK = {
   name: '',
@@ -35,6 +36,10 @@ export default function TeamTab() {
 
   async function submit(e) {
     e.preventDefault();
+    if (!editing.name?.trim() || !editing.designation?.trim() || !editing.category_id || (!editing.image && !editing.image_url)) {
+      r.setBanner({ type: 'error', message: 'Name, designation, category, and profile image are required.' });
+      return;
+    }
     const ok = await r.save(editing.id, editing, editing.id ? 'Member updated.' : 'Member added.');
     if (ok) setEditing(null);
   }
@@ -161,7 +166,7 @@ export default function TeamTab() {
 
             <div className="grid gap-5 sm:grid-cols-3">
               <div className="sm:col-span-2">
-                <Field label="Role category" hint="Groups the member on the /team page.">
+                <Field label="Role category" required hint="Groups the member on the /team page.">
                   <Select value={editing.category_id || ''} required onChange={(e) => setEditing({ ...editing, category_id: e.target.value })}>
                     <option value="" disabled>Select a category</option>
                     {categories.map((category) => (
@@ -185,11 +190,16 @@ export default function TeamTab() {
               <TextArea rows={4} value={editing.bio || ''} onChange={(e) => setEditing({ ...editing, bio: e.target.value })} />
             </Field>
 
-            <Field label="Profile photo" hint="Upload a portrait image (maximum 8 MB). Leave blank to keep the current photo when editing.">
+            <Field label="Profile photo" required hint={IMAGE_HELPER}>
               <input
                 type="file"
-                accept="image/*"
-                onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })}
+                accept={IMAGE_ACCEPT}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  const error = validateImageFile(file);
+                  if (error) { e.target.value = ''; r.setBanner({ type: 'error', message: error }); return; }
+                  setEditing({ ...editing, image: file });
+                }}
                 className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200"
               />
               {(editing.image || editing.image_url) && (

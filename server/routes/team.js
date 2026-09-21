@@ -77,6 +77,7 @@ router.post(
       return res.status(400).json({ error: 'Name and designation are required.' });
     }
     if (!values[2]) return res.status(400).json({ error: 'Choose a team category.' });
+    if (!values[4]) return res.status(400).json({ error: 'A profile image is required.' });
 
     const [result] = await pool.execute(
       `INSERT INTO team_members
@@ -101,6 +102,7 @@ router.put(
       return res.status(400).json({ error: 'Name and designation are required.' });
     }
     if (!values[2]) return res.status(400).json({ error: 'Choose a team category.' });
+    if (!values[4]) return res.status(400).json({ error: 'A profile image is required.' });
 
     const [result] = await pool.execute(
       `UPDATE team_members

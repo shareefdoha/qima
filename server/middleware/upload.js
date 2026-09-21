@@ -20,19 +20,36 @@ export const imageUpload = multer({
   // Files are persisted in MySQL rather than the deployment filesystem.
   // This keeps admin uploads available after Hostinger redeployments.
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
   fileFilter: (_req, file, cb) => {
-    if (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype)) return cb(null, true);
+    if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) return cb(null, true);
     return cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'image'));
   },
 });
+
+export const bannerMediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'].includes(file.mimetype)) return cb(null, true);
+    return cb(new multer.MulterError('LIMIT_UNEXPECTED_FILE', 'image'));
+  },
+});
+
+/** Enforce the lower image cap when a banner uses the mixed media upload. */
+export function enforceBannerMediaSize(req, _res, next) {
+  if (req.file?.mimetype.startsWith('image/') && req.file.size > 2 * 1024 * 1024) {
+    return next(new multer.MulterError('LIMIT_FILE_SIZE', 'image'));
+  }
+  next();
+}
 
 /** Store the image bytes in MySQL and return a portable public media path. */
 export async function uploadedPath(file) {
   if (!file) return null;
 
   const id = randomUUID();
-  const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }[file.mimetype] || 'jpg';
+  const extension = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'video/mp4': 'mp4', 'video/webm': 'webm' }[file.mimetype] || 'bin';
   await pool.execute(
     'INSERT INTO uploaded_media (id, filename, mime_type, data) VALUES (?, ?, ?, ?)',
     [id, `${id}.${extension}`, file.mimetype, file.buffer]

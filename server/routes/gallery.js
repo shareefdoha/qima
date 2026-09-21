@@ -8,6 +8,15 @@ const router = Router();
 
 const COLUMNS = 'id, title, type, url, video_embed_url, created_at';
 
+function isYouTubeUrl(value) {
+  try {
+    const host = new URL(String(value || '').trim()).hostname.replace(/^www\./, '').toLowerCase();
+    return host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtu.be';
+  } catch {
+    return false;
+  }
+}
+
 /** GET /api/gallery?type=photo|video  (public) */
 router.get(
   '/',
@@ -40,8 +49,8 @@ router.post(
       return res.status(400).json({ error: "type must be 'photo' or 'video'." });
     }
     if (type === 'photo' && !photoUrl) return res.status(400).json({ error: 'Upload a photo or provide an image URL.' });
-    if (type === 'video' && !video_embed_url) {
-      return res.status(400).json({ error: 'A video needs a video_embed_url (use the YouTube /embed/ URL).' });
+    if (type === 'video' && !isYouTubeUrl(video_embed_url)) {
+      return res.status(400).json({ error: 'Enter a valid YouTube video URL.' });
     }
 
     const [result] = await pool.execute(
@@ -64,6 +73,10 @@ router.put(
     if (!String(title).trim()) return res.status(400).json({ error: 'Title is required.' });
     if (!['photo', 'video'].includes(type)) {
       return res.status(400).json({ error: "type must be 'photo' or 'video'." });
+    }
+    if (type === 'photo' && !photoUrl) return res.status(400).json({ error: 'Upload a photo or provide an image URL.' });
+    if (type === 'video' && !isYouTubeUrl(video_embed_url)) {
+      return res.status(400).json({ error: 'Enter a valid YouTube video URL.' });
     }
 
     const [result] = await pool.execute(

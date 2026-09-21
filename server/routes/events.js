@@ -80,8 +80,8 @@ router.post(
   imageUpload.single('image'),
   asyncHandler(async (req, res) => {
     const values = await readBody(req.body, req.file);
-    if (!values[0] || !values[1]) {
-      return res.status(400).json({ error: 'Title and event_date (YYYY-MM-DD) are required.' });
+    if (!values[0] || !values[1] || !values[3] || !values[4] || !values[5]) {
+      return res.status(400).json({ error: 'Title, date, location, description, and cover image are required.' });
     }
 
     const [result] = await pool.execute(
@@ -101,8 +101,8 @@ router.put(
   imageUpload.single('image'),
   asyncHandler(async (req, res) => {
     const values = await readBody(req.body, req.file);
-    if (!values[0] || !values[1]) {
-      return res.status(400).json({ error: 'Title and event_date (YYYY-MM-DD) are required.' });
+    if (!values[0] || !values[1] || !values[3] || !values[4] || !values[5]) {
+      return res.status(400).json({ error: 'Title, date, location, description, and cover image are required.' });
     }
 
     const [result] = await pool.execute(

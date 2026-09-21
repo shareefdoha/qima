@@ -7,6 +7,7 @@ import {
 } from '../adminUi.jsx';
 import { LoadingBlock, EmptyBlock } from '../../components/ui.jsx';
 import { getYouTubeVideoId, toYouTubeEmbedUrl } from '../../utils/youtubeUtils.js';
+import { IMAGE_ACCEPT, IMAGE_HELPER, validateImageFile, validateVideoFile, VIDEO_ACCEPT, VIDEO_HELPER, YOUTUBE_HELPER } from '../fileValidation.js';
 
 const BLANK = {
   title: '',
@@ -35,6 +36,18 @@ export default function BannersTab() {
 
   async function submit(e) {
     e.preventDefault();
+    if (!editing.title?.trim()) {
+      r.setBanner({ type: 'error', message: 'Banner title is required.' });
+      return;
+    }
+    if (editing.media_type === 'image' && !editing.image && !editing.media_url) {
+      r.setBanner({ type: 'error', message: 'Upload a banner image before saving.' });
+      return;
+    }
+    if (editing.media_type === 'video' && !editing.image && !getYouTubeVideoId(editing.media_url) && !String(editing.media_url || '').startsWith('/api/media/')) {
+      r.setBanner({ type: 'error', message: 'Upload an MP4/WEBM video or enter a valid YouTube URL.' });
+      return;
+    }
     const ok = await r.save(editing.id, editing, editing.id ? 'Banner updated.' : 'Banner added.');
     if (ok) setEditing(null);
   }
@@ -144,15 +157,30 @@ export default function BannersTab() {
               </Field>
               <div className="sm:col-span-2">
                 {editing.media_type === 'image' ? (
-                  <Field label="Image upload" hint="Upload a hero image (maximum 8 MB). Leave blank to keep the existing image.">
-                    <input type="file" accept="image/*" onChange={(e) => setEditing({ ...editing, image: e.target.files?.[0] || null })} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
+                  <Field label="Image upload" required hint={IMAGE_HELPER}>
+                    <input type="file" accept={IMAGE_ACCEPT} onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      const error = validateImageFile(file);
+                      if (error) { e.target.value = ''; r.setBanner({ type: 'error', message: error }); return; }
+                      setEditing({ ...editing, image: file });
+                    }} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
                     {(editing.image || editing.media_url) && <img src={editing.image ? URL.createObjectURL(editing.image) : assetUrl(editing.media_url)} alt="Preview" className="mt-3 h-28 w-full rounded-xl object-cover" />}
                   </Field>
                 ) : (
-                  <Field label="YouTube or MP4 video URL" required hint="Paste any YouTube watch/shorts/embed URL, or a direct MP4 URL.">
-                    <TextInput required value={editing.media_url || ''} onChange={(e) => setEditing({ ...editing, media_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" />
-                    {getYouTubeVideoId(editing.media_url) && <div className="mt-3 aspect-video overflow-hidden rounded-xl bg-black"><iframe title="YouTube preview" src={toYouTubeEmbedUrl(editing.media_url, { mute: '1' })} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" /></div>}
-                  </Field>
+                  <div className="space-y-4">
+                    <Field label="Direct video upload" hint={VIDEO_HELPER}>
+                      <input type="file" accept={VIDEO_ACCEPT} onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        const error = validateVideoFile(file);
+                        if (error) { e.target.value = ''; r.setBanner({ type: 'error', message: error }); return; }
+                        setEditing({ ...editing, image: file });
+                      }} className="block w-full text-sm text-navy-600 file:mr-4 file:rounded-lg file:border-0 file:bg-navy-100 file:px-4 file:py-2 file:font-medium file:text-navy-800 hover:file:bg-navy-200" />
+                    </Field>
+                    <Field label="YouTube video URL" hint={YOUTUBE_HELPER}>
+                      <TextInput value={editing.media_url || ''} onChange={(e) => setEditing({ ...editing, media_url: e.target.value })} placeholder="https://www.youtube.com/watch?v=…" />
+                      {getYouTubeVideoId(editing.media_url) && <div className="mt-3 aspect-video overflow-hidden rounded-xl bg-black"><iframe title="YouTube preview" src={toYouTubeEmbedUrl(editing.media_url, { mute: '1' })} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" /></div>}
+                    </Field>
+                  </div>
                 )}
               </div>
             </div>
